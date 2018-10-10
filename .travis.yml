@@ -1,0 +1,25 @@
+{
+  "os": "linux",
+  "jdk": "oraclejdk8",
+  "dist": "trusty",
+  "sudo": false,
+  "group": "stable",
+  "android": {
+    "licenses": [
+      "android-sdk-license-.+"
+    ],
+    "components": [
+      "tools",
+      "platform-tools",
+      "build-tools-28.0.2",
+      "android-28",
+      "extra-google-google_play_services",
+      "extra-google-m2repository",
+      "extra-android-m2repository",
+      "addon-google_apis-google-26",
+      "sys-img-armeabi-v7a-android-26",
+      "sys-img-armeabi-v7a-android-17"
+    ]
+  },
+  "language": "android"
+}
