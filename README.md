@@ -12,6 +12,20 @@ Parse-user is a test application to showcase the creation of user accounts using
 ### Prerequisite  
 A [Parse server](https://parseplatform.org) with a server URL, an App Id and a Client Key.
 
+### Basic Flow
+![flow-diagram](https://github.com/ericafenyo/parse-user/raw/master/assets/basic-registration-diagram.png)
+
+### Mockup screens
+The app uses 5 different screens excluding a screen reserved for credits.
+![mockup-screens](https://github.com/ericafenyo/parse-user/raw/master/assets/mock.png)
+
+### Dependencies
+* [Android Support Libraries](https://developer.android.com/topic/libraries/support-library/)
+* [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/)
+* [Butter Knife](http://jakewharton.github.io/butterknife/)
+* [Google Gson](https://github.com/google/gson/)
+* [Picasso](http://square.github.io/picasso/)
+* [Parseplatform-Android](https://docs.parseplatform.org/android/guide/)
 
 ### LICENSE
     Copyright (C) 2018 Eric Afenyo
@@ -27,3 +41,5 @@ A [Parse server](https://parseplatform.org) with a server URL, an App Id and a C
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
