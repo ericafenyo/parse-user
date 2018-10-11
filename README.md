@@ -12,8 +12,8 @@ Parse-user is a test application to showcase the creation of user accounts using
 ### Prerequisite  
 A [Parse server](https://parseplatform.org) with a server URL, an App Id and a Client Key.
 
-<!-- ### Basic Flow
-![flow-diagram](https://github.com/ericafenyo/parse-user/raw/master/assets/basic-registration-diagram.png) -->
+### Basic Flow
+![flow-diagram](https://github.com/ericafenyo/parse-user/raw/master/assets/basic-flow.png)
 
 ### Mockup screens
 The app uses 5 different screens excluding a screen reserved for credits.
