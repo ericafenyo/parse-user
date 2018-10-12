@@ -91,4 +91,7 @@ dependencies {
     //circle indicator
     implementation 'me.relex:circleindicator:1.2.2'
 
+    //status bar util
+    implementation 'com.jaeger.statusbarutil:library:1.5.1'
+
 }
