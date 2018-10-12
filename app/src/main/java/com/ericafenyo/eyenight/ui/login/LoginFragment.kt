@@ -16,14 +16,18 @@
 
 package com.ericafenyo.eyenight.ui.login
 
-import android.arch.lifecycle.ViewModelProviders
+import android.arch.lifecycle.*
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.button.MaterialButton
 import android.support.design.widget.TextInputEditText
 import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,17 +37,10 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import com.ericafenyo.eyenight.R
 import com.ericafenyo.eyenight.ui.signup.SignUpActivity
+import com.parse.ParseException
 import com.parse.ParseUser
 
 class LoginFragment : Fragment() {
-    @BindView(R.id.edit_text_email) lateinit var editTextEmail: TextInputEditText
-    @BindView(R.id.edit_text_password) lateinit var editTextPassword: TextInputEditText
-    @BindView(R.id.text_input_layout_password) lateinit var textInputLayoutPassword: TextInputLayout
-    @BindView(R.id.text_input_layout_email) lateinit var textInputLayoutEmail: TextInputLayout
-    @BindView(R.id.login_progress) lateinit var loginProgress: ProgressBar
-    @BindView(R.id.button_sign_in) lateinit var buttonSignIn: MaterialButton
-    @BindView(R.id.text_sign_up) lateinit var textSignUp: TextView
-    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
 
     companion object {
         /**
@@ -52,10 +49,23 @@ class LoginFragment : Fragment() {
          */
         @JvmStatic
         fun newInstance() = LoginFragment()
+
+        private val LOG_TAG = LoginFragment::class.java.name
+
     }
 
-    private lateinit var viewModel: LoginViewModel
+    @BindView(R.id.edit_text_email) lateinit var editTextEmail: TextInputEditText
+    @BindView(R.id.edit_text_password) lateinit var editTextPassword: TextInputEditText
+    @BindView(R.id.text_input_layout_password) lateinit var passwordInputLayout: TextInputLayout
+    @BindView(R.id.text_input_layout_email) lateinit var emailInputLayout: TextInputLayout
+    @BindView(R.id.login_progress) lateinit var loginProgress: ProgressBar
+    @BindView(R.id.button_sign_in) lateinit var buttonSignIn: MaterialButton
+    @BindView(R.id.text_sign_up) lateinit var textSignUp: TextView
+    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
+
     private var cancelUserLoginAttempt = false
+
+    private lateinit var viewModel: LoginViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -82,78 +92,153 @@ class LoginFragment : Fragment() {
 
     //TODO: Remove this after test
     private fun attemptLogin() {
+        if (hasInternetConnectivity(context)) {
+            proceedLoginAttempt()
+        } else {
+            //show internet connection dialog
+            showConnectivityAlertDialog()
+        }
+    }
+
+    private fun proceedLoginAttempt() {
+        var emailLayout: View? = null
+        var passwordLayout: View? = null
         // retrieve the email text from the EditText
         val userEmail = editTextEmail.text.toString()
         // retrieve the password text from the EditText
         val userPassword = editTextPassword.text.toString()
 
-        // Check for a valid email address.
+        // Check whether the user left the email field empty before submitting the form.
         if (userEmail.isEmpty()) {
+            emailInputLayout.error = getString(R.string.error_field_required)
             cancelUserLoginAttempt = true
-            //log email cannot be empty
-        } else if (!isValidEmail(userEmail)) {
-            cancelUserLoginAttempt = true
-            //log email error
+            emailLayout = emailInputLayout
+            Log.v(LOG_TAG, "userEmailempty");
+        } else {
+            cancelUserLoginAttempt = false
         }
-
-        // Check for a valid user password
+        // Check whether the user left the password field empty before submitting the form.
         if (userPassword.isEmpty()) {
+            Log.v(LOG_TAG, "userPasswordempty");
+            passwordInputLayout.error = getString(R.string.error_field_required)
             cancelUserLoginAttempt = true
-            //log password cannot be empty
-        } else if (!isValidPasswordl(userPassword)) {
-            cancelUserLoginAttempt = true
-            //log email error
+            passwordLayout = passwordInputLayout
+        } else {
+            cancelUserLoginAttempt = false
         }
 
+        //NOTE: I am not implementing email and password validation since a user who has already being registered
+        //may receive an error if the email validation pattern changes in the future. Feel free to add
+        //a validation if needed according to your use case.
+
+        //To validate the inputs from the user, we will simply rely on the server-end validation. That is
+        //The login status received from the server.
 
         if (cancelUserLoginAttempt) {
-            // draw users attention to the errors
+            Log.v(LOG_TAG, "cancelUserLoginAttempt");
+            //Draw users attention to the right EditText
+            focusTextInputLayout(emailLayout, passwordLayout)
         } else {
-            // email and password is valid
-            // proceed to perform the user login attempt.
             attemptLogin(userEmail, userPassword)
         }
     }
 
+    private fun showConnectivityAlertDialog() {
+        val message = getString(R.string.msg_offline_state)
+        context?.let {
+            val alertDialog = AlertDialog.Builder(it)
+                    .setMessage(message)
+                    .setPositiveButton("Try again") { dialog, _ -> dialog.dismiss() }
+            alertDialog.show()
+        }
+
+
+    }
+
+    /**
+     * Gives focus to an text input layout.
+     * If [editTextEmail] is empty, [emailInputLayout] becomes the focused view. However. The [passwordInputLayout]
+     * is only focus if the [editTextEmail] has some data or text.
+     * */
+    private fun focusTextInputLayout(emailLayout: View?, passwordLayout: View?) {
+        if (emailLayout != null) {
+            emailLayout.requestFocus()
+        } else {
+            passwordLayout?.requestFocus()
+        }
+    }
+
     private fun attemptLogin(userEmail: String, userPassword: String) {
+        Log.v(LOG_TAG, "attemptLogin")
+        showProgress(true)
         ParseUser.logInInBackground(userEmail, userPassword) { user, error ->
             if (user != null) {
+                //login successful , hide loading indicator
+                showProgress(false)
                 // proceed to HomeScreen
+                navigateBackToHomeScreen()
             } else {
-                // Show error to user
-                // modify UI state based on error
-                // Check network connectivity
-                // Log the error
+                // There was an error, hide loading indicator
+                showProgress(false)
+                showServerError(error)
+                Log.e(LOG_TAG, "Failed to complete login process. Error message: ${error.message} Error code ${error.code}")
             }
         }
     }
 
-    /**
-     * TODO: Remove this after test
-     * Compares the users e-mail input against a Pattern
-     *
-     * @return returns true if the [email] matches with the required Pattern
-     * @see [OWASP Validation Regex Repository](https://www.owasp.org/index.php/OWASP_Validation_Regex_Repository)
-     */
-    private fun isValidEmail(email: String): Boolean {
-        //A valid e-mail address pattern
-        val emailPattern = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
-        val emailRegex = Regex(emailPattern)
-        return emailRegex.matches(email)
+    private fun showServerError(error: ParseException) {
+        val errorMessage = MutableLiveData<String>()
+        when (error.code) {
+            101 -> errorMessage.postValue(getString(R.string.error_invalid_email_or_password))
+        }
+        observe(errorMessage) { passwordInputLayout.error = it }
     }
 
+    private fun navigateBackToHomeScreen() {
+        clearTextInputLayoutErrors()
+        if (ParseUser.getCurrentUser().isAuthenticated) {
+            activity?.finish()
+        }
+    }
+
+    private fun clearTextInputLayoutErrors() {
+        emailInputLayout.error = null
+        passwordInputLayout.error = null
+    }
+
+    private fun showProgress(show: Boolean) {
+        if (show) {
+            buttonSignIn.text = ""
+            loginProgress.show()
+        } else {
+            loginProgress.hide()
+            buttonSignIn.setText(R.string.label_login)
+        }
+    }
+
+
     /**
-     * TODO: Remove this after test
-     * Compares the users password input against a Pattern
+     * returns a boolean based on the internet connectivity of the device
      *
-     * @return returns true if the [password] matches with the required Pattern. Thais is
-     * Contains 6 to 14 characters with numbers and both lowercase and uppercase letters.
-     * @see [OWASP Validation Regex Repository](https://www.owasp.org/index.php/OWASP_Validation_Regex_Repository)
+     * @param context an android Activity or an Application Context
+     * @return true if device is connected to internet
      */
-    private fun isValidPasswordl(password: String): Boolean {
-        //6 to 14 character password requiring numbers and both lowercase and uppercase letters
-        val passwordPattern = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,14}\$"
-        val passwordRegex = Regex(passwordPattern)
-        return passwordRegex.matches(password)
+    private fun hasInternetConnectivity(context: Context?): Boolean {
+        val cm = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = cm.activeNetworkInfo
+        return activeNetwork != null && activeNetwork.isConnected
     }
 }
+
+fun View.show() {
+    visibility = View.VISIBLE
+}
+
+fun View.hide() {
+    visibility = View.GONE
+}
+
+fun <T> LifecycleOwner.observe(liveData: LiveData<T>, block: (T) -> Unit) {
+    liveData.observe(this, Observer { block(it!!) })
+}
+

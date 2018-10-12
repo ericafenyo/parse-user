@@ -19,12 +19,16 @@ package com.ericafenyo.eyenight.ui.signup
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.ericafenyo.eyenight.R
 import com.ericafenyo.eyenight.adapter.PagerAdapter
 import kotlinx.android.synthetic.main.activity_sign_up.*
 
 class SignUpActivity : AppCompatActivity() {
+    @BindView(R.id.view_pager) lateinit var viewPager: ViewPager
 
     companion object {
         /**
@@ -43,6 +47,7 @@ class SignUpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
+        ButterKnife.bind(this)
 
         val adapter = PagerAdapter(supportFragmentManager)
         with(adapter) {
@@ -50,8 +55,10 @@ class SignUpActivity : AppCompatActivity() {
             addFragment(AddPhotoFragment.newInstance())
         }
 
-        view_pager.adapter = adapter
-        view_pager_indicator.setViewPager(view_pager)
+        viewPager.adapter = adapter
+        view_pager_indicator.setViewPager(viewPager)
 
     }
+
+    fun provideViewPager() = viewPager
 }

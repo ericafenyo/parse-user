@@ -18,11 +18,15 @@ package com.ericafenyo.eyenight
 
 import android.arch.lifecycle.MutableLiveData
 import android.os.Bundle
+import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.Window
 import android.view.WindowManager
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.ericafenyo.eyenight.ui.login.LoginActivity
 import com.parse.ParseUser
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private val LOG_TAG = MainActivity::class.java.name
@@ -35,8 +39,19 @@ class MainActivity : AppCompatActivity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_main)
-
         verifyUser()
+        button_log_out.setOnClickListener { logUserOut(savedInstanceState) }
+    }
+
+    private fun logUserOut(savedInstanceState: Bundle?) {
+        val currentUser = ParseUser.getCurrentUser()
+        ParseUser.logOutInBackground { error ->
+            if (error == null) {
+                onCreate(savedInstanceState)
+            } else {
+
+            }
+        }
     }
 
     /**

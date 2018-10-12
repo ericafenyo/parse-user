@@ -23,9 +23,9 @@
     tools:context=".ui.login.LoginFragment">
 
     <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
 
     <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -111,7 +111,7 @@
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.button.MaterialButton
-            android:id="@+id/button_sign_in"
+            android:id="@+id/button_sign_up"
             style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="match_parent"
             android:layout_height="68dp"
@@ -130,13 +130,14 @@
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginStart="24dp"
             android:indeterminate="true"
+            android:visibility="gone"
             android:indeterminateTint="@android:color/white"
             android:indeterminateTintMode="src_atop"
-            app:layout_constraintBottom_toBottomOf="@+id/button_sign_in"
-            app:layout_constraintStart_toStartOf="@+id/button_sign_in"
-            app:layout_constraintTop_toTopOf="@+id/button_sign_in" />
+            app:layout_constraintBottom_toBottomOf="@+id/button_sign_up"
+            app:layout_constraintEnd_toEndOf="@+id/button_sign_up"
+            app:layout_constraintStart_toStartOf="@+id/button_sign_up"
+            app:layout_constraintTop_toTopOf="@+id/button_sign_up" />
 
         <TextView
             android:id="@+id/text_account_state_info"
@@ -145,8 +146,8 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?selectableItemBackground"
-            android:text="@string/already_have_login"
             android:gravity="center"
+            android:text="@string/already_have_login"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
