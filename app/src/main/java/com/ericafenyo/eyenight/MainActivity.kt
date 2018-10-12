@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         val currentUser = ParseUser.getCurrentUser()
         ParseUser.logOutInBackground { error ->
             if (error == null) {
-                onCreate(savedInstanceState)
+                //Success
             } else {
 
             }
