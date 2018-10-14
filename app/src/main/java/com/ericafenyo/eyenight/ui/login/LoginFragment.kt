@@ -61,7 +61,6 @@ class LoginFragment : Fragment() {
     @BindView(R.id.login_progress) lateinit var loginProgress: ProgressBar
     @BindView(R.id.button_sign_in) lateinit var buttonSignIn: MaterialButton
     @BindView(R.id.text_sign_up) lateinit var textSignUp: TextView
-    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
 
     private var cancelUserLoginAttempt = false
 

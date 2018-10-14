@@ -20,6 +20,7 @@ package com.ericafenyo.eyenight.ui.signup
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -34,9 +35,10 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.ericafenyo.eyenight.R
-import com.parse.ParseUser
-import java.io.File
-import java.io.IOException
+import com.ericafenyo.eyenight.utils.convertBitmapToByteArray
+import com.parse.*
+import java.io.*
+import java.lang.NullPointerException
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -89,13 +91,30 @@ class AddPhotoFragment : Fragment() {
         chipNewPhoto.setOnClickListener { dispatchTakePictureIntent() }
         chipOpenGallery.setOnClickListener { dispatchOpenGalleryIntent() }
         imageProfile.setOnClickListener { dispatchOpenGalleryIntent() }
-        textSkip.setOnClickListener { navigateToHomeScreen() }
+        textSkip.setOnClickListener { }
     }
 
+//    private fun getUserObject() {
+//        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.test)
+//        val stream = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+//        val byteArray = stream.toByteArray()
+//        val imageFile = ParseFile("profile.jpg", byteArray)
+//        val userObject = ParseObject.create("_User")
+//        userObject.put("username", "USERNAME")
+//        userObject.put("password", "password")
+//        userObject.put("image", imageFile)
+//        userObject.saveInBackground {
+//            if (it != null) {
+//                Log.e(LOG_TAG, it.message)
+//            }
+//        }
+//    }
+
     private fun navigateToHomeScreen() {
-        if (ParseUser.getCurrentUser() != null) {
-            activity?.finish()
-        }
+//        if (ParseUser.getCurrentUser() != null) {
+////            activity?.finish()
+////        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -105,6 +124,9 @@ class AddPhotoFragment : Fragment() {
                 REQUEST_IMAGE_CAPTURE -> {
                     val bitmap = data?.extras?.get("data") as Bitmap
                     imageProfile.setImageBitmap(bitmap)
+                    val filePath = saveImageProfile(bitmap)
+                    Log.v(LOG_TAG, "$filePath")
+
                 }
 
                 REQUEST_IMAGE_GALLERY -> {
@@ -112,25 +134,97 @@ class AddPhotoFragment : Fragment() {
                     try {
                         val bitmap = MediaStore.Images.Media.getBitmap(activity?.contentResolver, imageUri)
                         imageProfile.setImageBitmap(bitmap)
-
-                        createImageFile()
+                        val filePath = saveImageProfile(bitmap)
+                        Log.v(LOG_TAG, "$filePath")
+                        val bitmapByteArray = convertBitmapToByteArray(bitmap)
+                        Log.v(LOG_TAG, "$bitmapByteArray")
+                        val fileName = "profile.jpg"
+                        saveParseFile(fileName, bitmapByteArray)
                     } catch (e: Exception) {
-                        Log.e(LOG_TAG, "Failed to set User Profile : $e")
+                        Log.e(LOG_TAG, "Failed to set UserEntity Profile : $e")
                     }
                 }
             }
         }
     }
 
+    private fun saveParseFile(fileName: String, bitmapByteArray: ByteArray) {
+        val parseFile = ParseFile("profile.jpg", "Hello".toByteArray())
+        parseFile.saveInBackground(
+                { error: ParseException ->
+                    Log.e(LOG_TAG, "$error")
+                }, { progress ->
+            Log.e(LOG_TAG, "$progress")
+        })
+    }
+
+    private fun saveImageProfile(bitmap: Bitmap? = null): String? {
+        var outputStream: FileOutputStream? = null
+        val fileDirectory = context?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val fileName = "profile.jpg"
+        val profileImage = File(fileDirectory, fileName)
+        try {
+            outputStream = FileOutputStream(profileImage)
+            if (bitmap != null) {
+                //save the bitmap to disk
+                writeBitmap(bitmap, outputStream)
+            }
+        } catch (e: FileNotFoundException) {
+            // File not found
+            Log.v(LOG_TAG, e.message)
+        } catch (e: NullPointerException) {
+            // FileName is null
+            Log.e(LOG_TAG, e.message)
+        } finally {
+            try {
+                outputStream?.close()
+            } catch (e: IOException) {
+                //I/O error occurs.
+                Log.v(LOG_TAG, "IO Error : ${e.message}")
+            }
+        }
+
+        if (bitmap != null) {
+            val quality = 100
+            bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream)
+        }
+
+        return fileDirectory?.absolutePath
+
+//
+//
+//        try {
+//            fos = FileOutputStream(mypath)
+//            // Use the compress method on the BitMap object to write image to the OutputStream
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        } finally {
+//            try {
+//                fos!!.close()
+//            } catch (e: IOException) {
+//                e.printStackTrace()
+//            }
+//
+//        }
+//        return directory.absolutePath
+    }
+
+    private fun writeBitmap(bitmap: Bitmap, outputStream: FileOutputStream?) {
+        val quality = 100
+        //The compress method writes a compressed version of the bitmap to our outputStream.
+        bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream)
+    }
+
     var mCurrentPhotoPath: String = ""
 
-    @Throws(IOException::class)
-    private fun createImageFile(): File {
-        val storageDirectory = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile("profile", ".jpg", storageDirectory).apply {
-            mCurrentPhotoPath = absolutePath
-        }
-    }
+//    @Throws(IOException::class)
+//    private fun createImageFile(): File {
+//        val storageDirectory = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+//        return File.createTempFile("profile", ".jpg", storageDirectory).apply {
+//            mCurrentPhotoPath = absolutePath
+//        }
+//    }
 
 
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")

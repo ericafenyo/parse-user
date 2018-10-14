@@ -17,18 +17,23 @@
 package com.ericafenyo.eyenight
 
 import android.arch.lifecycle.MutableLiveData
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Window
 import android.view.WindowManager
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.ericafenyo.eyenight.ui.login.LoginActivity
+import com.parse.ParseFile
+import com.parse.ParseQuery
 import com.parse.ParseUser
+import com.parse.ParseUser.getCurrentUser
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
+
     private val LOG_TAG = MainActivity::class.java.name
 
     private var isAuthenticated = MutableLiveData<Boolean>()
@@ -40,10 +45,16 @@ class MainActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_main)
         verifyUser()
-        button_log_out.setOnClickListener { logUserOut(savedInstanceState) }
+        button_log_out.setOnClickListener { logUserOut() }
+        button_add_image.setOnClickListener { addImage() }
     }
 
-    private fun logUserOut(savedInstanceState: Bundle?) {
+    private fun addImage() {
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.test)
+        addProfileImage(bitmap)
+    }
+
+    private fun logUserOut() {
         val currentUser = ParseUser.getCurrentUser()
         ParseUser.logOutInBackground { error ->
             if (error == null) {
@@ -69,6 +80,7 @@ class MainActivity : AppCompatActivity() {
     private fun launchLoginScreen() {
         val intent = LoginActivity.getStartIntent(this)
         startActivity(intent)
+        finish()
     }
 
     /**
@@ -85,7 +97,39 @@ class MainActivity : AppCompatActivity() {
     private fun authenticateUser() {
         isAuthenticated.postValue(true)
     }
+}
 
-    //TODO: Ask for email-completions permission
-    //TODO: Define App Architecture
+private fun addProfileImage(bitmap: Bitmap) {
+    val LOG_TAG = MainActivity::class.java.name
+
+    val objectId = getCurrentUser().objectId
+    val userQuery = ParseQuery.getQuery<ParseUser>("_User")
+
+    if (objectId != null) {
+        userQuery.getInBackground(objectId) { user, error ->
+            if (error == null) {
+                user.put("image", provideImageFile(bitmap))
+                user.saveInBackground {
+                    if (it == null) {
+                        Log.v(LOG_TAG, "success")
+                    } else {
+                        Log.e(LOG_TAG, "$error")
+                    }
+                }
+            } else {
+                Log.e(LOG_TAG, error.message)
+            }
+        }
+    }
+}
+
+fun provideImageFile(bitmap: Bitmap): ParseFile {
+    val stream = ByteArrayOutputStream()
+    bitmap.putInto(stream)
+    val byteArray = stream.toByteArray()
+    return ParseFile("profile.jpg", byteArray)
+}
+
+private fun Bitmap.putInto(stream: ByteArrayOutputStream) {
+    compress(Bitmap.CompressFormat.PNG, 100, stream)
 }

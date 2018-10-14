@@ -22,10 +22,7 @@
     android:orientation="vertical"
     tools:context=".ui.login.LoginFragment">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+
 
     <ScrollView
         android:layout_width="match_parent"
@@ -46,7 +43,7 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="48dp"
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_lock"
                 app:layout_constraintEnd_toEndOf="parent"
