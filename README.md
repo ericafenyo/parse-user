@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ericafenyo/parse-user.svg?branch=master)](https://travis-ci.org/ericafenyo/parse-user)
+
 
 ### Parse-user
 Parse-user is a test application to showcase the creation of user accounts using a [Parse server](https://parseplatform.org).
