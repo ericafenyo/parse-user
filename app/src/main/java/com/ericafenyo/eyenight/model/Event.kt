@@ -51,8 +51,7 @@ data class EventEntity(
             parcel.readString(),
             parcel.readString(),
             parcel.readByte() != 0.toByte(),
-            parcel.readParcelable(ParseFile::class.java.classLoader)) {
-    }
+            parcel.readParcelable(ParseFile::class.java.classLoader))
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(locationName)

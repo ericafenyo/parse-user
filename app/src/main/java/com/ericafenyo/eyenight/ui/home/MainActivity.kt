@@ -28,7 +28,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.ericafenyo.eyenight.DividerItemDecorator
-import com.ericafenyo.eyenight.EventNightViewModel
+import com.ericafenyo.eyenight.EyeNightViewModel
 import com.ericafenyo.eyenight.R
 import com.ericafenyo.eyenight.controller.ProductController
 import com.ericafenyo.eyenight.model.Event
@@ -66,13 +66,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var isAuthenticated = MutableLiveData<Boolean>()
-    private lateinit var viewModel: EventNightViewModel
+    private lateinit var viewModel: EyeNightViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(EyeNightViewModel::class.java)
         verifyUser()
     }
 

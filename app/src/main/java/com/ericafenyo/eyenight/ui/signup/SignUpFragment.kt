@@ -37,7 +37,7 @@ import com.ericafenyo.eyenight.R
 import com.ericafenyo.eyenight.model.NetworkState
 import com.ericafenyo.eyenight.model.Status
 import com.ericafenyo.eyenight.model.UserEntity
-import com.ericafenyo.eyenight.EventNightViewModel
+import com.ericafenyo.eyenight.EyeNightViewModel
 import com.ericafenyo.eyenight.ui.login.hide
 import com.ericafenyo.eyenight.ui.login.observe
 import com.ericafenyo.eyenight.ui.login.show
@@ -69,7 +69,7 @@ class SignUpFragment : Fragment() {
 
     private var signUpActivity: SignUpActivity? = null
 
-    private lateinit var viewModel: EventNightViewModel
+    private lateinit var viewModel: EyeNightViewModel
     private var cancelUserLoginAttempt = false
     private var notValidUserInputs = false
 
@@ -86,7 +86,7 @@ class SignUpFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(EyeNightViewModel::class.java)
 
         buttonSignUp.setOnClickListener { attemptSignUp() }
         alreadyHasLogin.setOnClickListener { activity?.finish() }

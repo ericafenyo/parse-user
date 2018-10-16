@@ -45,7 +45,7 @@ import butterknife.ButterKnife
 import com.ericafenyo.eyenight.R
 import com.ericafenyo.eyenight.model.NetworkState
 import com.ericafenyo.eyenight.model.Status
-import com.ericafenyo.eyenight.EventNightViewModel
+import com.ericafenyo.eyenight.EyeNightViewModel
 import com.ericafenyo.eyenight.ui.login.LoginActivity
 import com.ericafenyo.eyenight.ui.login.hide
 import com.ericafenyo.eyenight.ui.login.observe
@@ -83,7 +83,7 @@ class ProfileFragment : Fragment() {
         private const val REQUEST_IMAGE_GALLERY = 5
     }
 
-    private lateinit var viewModel: EventNightViewModel
+    private lateinit var viewModel: EyeNightViewModel
     @BindView(R.id.image_profile) lateinit var imageProfile: ImageView
     @BindView(R.id.text_username) lateinit var textUserName: TextView
     @BindView(R.id.button_log_out) lateinit var buttonLogOut: Button
@@ -103,7 +103,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ButterKnife.bind(this, view)
-        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(EyeNightViewModel::class.java)
         val activity = activity as AppCompatActivity
         toolbar.setTitle(R.string.title_profile)
         activity.setSupportActionBar(toolbar)

@@ -32,7 +32,6 @@
         <activity
             android:name=".ui.signup.SignUpActivity"
             android:theme="@style/AppTheme.Fullscreen" />
-        <activity android:name=".ui.product.ProductActivity" />
         <activity android:name=".ui.event.EventActivity"></activity>
     </application>
 

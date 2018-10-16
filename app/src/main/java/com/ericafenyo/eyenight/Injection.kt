@@ -23,6 +23,7 @@ import com.ericafenyo.eyenight.data.EyeNightDataSource
 import com.ericafenyo.eyenight.data.EyeNightRepository
 import com.ericafenyo.eyenight.data.Repository
 
+
 object Injection {
 
     fun provideRepository(): Repository = EyeNightRepository(provideDataSource())

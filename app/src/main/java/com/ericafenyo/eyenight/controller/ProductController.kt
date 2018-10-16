@@ -29,7 +29,6 @@ import com.ericafenyo.eyenight.model.ProductModel_
  */
 class ProductController : EpoxyController() {
     private lateinit var products: List<Product>
-    private lateinit var networkState: NetworkState
     lateinit var onProductItemCLick: (price: Number?, event: Event) -> Unit
 
     override fun buildModels() {

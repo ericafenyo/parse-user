@@ -39,7 +39,7 @@ import com.ericafenyo.eyenight.R
 import com.ericafenyo.eyenight.model.NetworkState
 import com.ericafenyo.eyenight.model.Status
 import com.ericafenyo.eyenight.model.UserEntity
-import com.ericafenyo.eyenight.EventNightViewModel
+import com.ericafenyo.eyenight.EyeNightViewModel
 import com.ericafenyo.eyenight.ui.signup.SignUpActivity
 import com.parse.ParseException
 import com.parse.ParseUser
@@ -69,7 +69,7 @@ class LoginFragment : Fragment() {
     @BindView(R.id.button_sign_in) lateinit var buttonSignIn: MaterialButton
     @BindView(R.id.text_sign_up) lateinit var textSignUp: TextView
 
-    private lateinit var viewModel: EventNightViewModel
+    private lateinit var viewModel: EyeNightViewModel
     private var cancelUserLoginAttempt = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -85,7 +85,7 @@ class LoginFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         //Get instance to our viewModel
-        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(EyeNightViewModel::class.java)
         buttonSignIn.setOnClickListener { attemptLogin() }
         textSignUp.setOnClickListener { launchSignUpScreen() }
     }

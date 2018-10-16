@@ -37,7 +37,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import com.ericafenyo.eyenight.ui.home.MainActivity
 import com.ericafenyo.eyenight.R
-import com.ericafenyo.eyenight.EventNightViewModel
+import com.ericafenyo.eyenight.EyeNightViewModel
 import com.ericafenyo.eyenight.ui.login.observe
 import com.parse.ParseFile
 import com.parse.ParseUser
@@ -65,7 +65,7 @@ class AddPhotoFragment : Fragment() {
     @BindView(R.id.image_profile) lateinit var imageProfile: ImageView
     @BindView(R.id.text_finish) lateinit var textSkip: TextView
 
-    private lateinit var viewModel: EventNightViewModel
+    private lateinit var viewModel: EyeNightViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -80,7 +80,7 @@ class AddPhotoFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(EyeNightViewModel::class.java)
         chipNewPhoto.setOnClickListener { dispatchTakePictureIntent() }
         chipOpenGallery.setOnClickListener { dispatchOpenGalleryIntent() }
         imageProfile.setOnClickListener { dispatchOpenGalleryIntent() }
@@ -91,7 +91,7 @@ class AddPhotoFragment : Fragment() {
         val intent = MainActivity.getStartIntent(activity as AppCompatActivity)
         if (ParseUser.getCurrentUser().isAuthenticated) {
             startActivityForResult(intent, SIGN_UP_SUCCESSFUL_REQUEST_CODE)
-            activity?.finish()
+            activity?.finishAffinity()
         }
     }
 

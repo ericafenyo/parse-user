@@ -27,7 +27,7 @@ import com.parse.ParseFile
  * Prepares data for a View to consume. It also accepts actions from the View and channel them to
  * the Repository where they are being executed
  */
-class EventNightViewModel : ViewModel() {
+class EyeNightViewModel : ViewModel() {
     private val repository = Injection.provideRepository()
     private val results = repository.getProducts()
 
