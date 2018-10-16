@@ -177,7 +177,7 @@ object EyeNightDataSource : DataSource {
     }
 
     override fun requestPasswordReset(email: String): LiveData<NetworkState> {
-        TODO()
+        TODO("not implemented")
     }
 
     private fun attemptSignUp(user: UserEntity): MutableLiveData<NetworkState> {

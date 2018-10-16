@@ -248,7 +248,7 @@ class SignUpFragment : Fragment() {
 
     private fun showServiceNotAvailableError() {
         emailInputLayout.error = null
-        passwordInputLayout.error = getString(R.string.error_service_not_available)
+        passwordInputLayout.error = getString(R.string.error_sign_up_failed)
     }
 
     private fun navigateToTakePhotoScreen() {
@@ -279,7 +279,6 @@ class SignUpFragment : Fragment() {
     }
 
     /**
-     * TODO: Remove this after test
      * Compares the users e-mail input against a Pattern
      *
      * @return returns true if the [email] matches with the required Pattern

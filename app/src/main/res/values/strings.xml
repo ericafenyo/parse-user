@@ -81,6 +81,7 @@
     <string name="label_abstract">Abstract</string>
 
     <string name="msg_prompt_account_removal">Are you sure you want to proceed?</string>
+    <string name="error_sign_up_failed">Sign up failed</string>
 
 
 </resources>
