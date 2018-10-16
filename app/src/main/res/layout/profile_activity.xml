@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
   Copyright (C) 2018 Eric Afenyo
 
@@ -15,9 +16,8 @@
   limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/profile_fragment"
+    class="com.ericafenyo.eyenight.ui.profile.ProfileFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ProfileActivity" />
+    android:layout_height="match_parent" />

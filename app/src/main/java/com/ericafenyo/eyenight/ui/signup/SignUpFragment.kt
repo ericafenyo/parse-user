@@ -16,7 +16,6 @@
 
 package com.ericafenyo.eyenight.ui.signup
 
-import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.net.ConnectivityManager
@@ -26,7 +25,6 @@ import android.support.design.widget.TextInputEditText
 import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -36,13 +34,19 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.ericafenyo.eyenight.R
+import com.ericafenyo.eyenight.model.NetworkState
+import com.ericafenyo.eyenight.model.Status
+import com.ericafenyo.eyenight.model.UserEntity
+import com.ericafenyo.eyenight.EventNightViewModel
 import com.ericafenyo.eyenight.ui.login.hide
 import com.ericafenyo.eyenight.ui.login.observe
 import com.ericafenyo.eyenight.ui.login.show
 import com.parse.ParseException
 import com.parse.ParseUser
 
-
+/**
+ * Contains our sign up logic
+ */
 class SignUpFragment : Fragment() {
     companion object {
         /**
@@ -53,7 +57,6 @@ class SignUpFragment : Fragment() {
         fun newInstance() = SignUpFragment()
 
         private val LOG_TAG = SignUpFragment::class.java.name
-
     }
 
     @BindView(R.id.edit_text_email) lateinit var editTextEmail: TextInputEditText
@@ -63,12 +66,12 @@ class SignUpFragment : Fragment() {
     @BindView(R.id.login_progress) lateinit var loginProgress: ProgressBar
     @BindView(R.id.button_sign_up) lateinit var buttonSignUp: MaterialButton
     @BindView(R.id.text_account_state_info) lateinit var alreadyHasLogin: TextView
-    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
 
     private var signUpActivity: SignUpActivity? = null
 
-    private lateinit var viewModel: SignUpViewModel
+    private lateinit var viewModel: EventNightViewModel
     private var cancelUserLoginAttempt = false
+    private var notValidUserInputs = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -83,9 +86,15 @@ class SignUpFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(SignUpViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
 
         buttonSignUp.setOnClickListener { attemptSignUp() }
+        alreadyHasLogin.setOnClickListener { activity?.finish() }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        signUpActivity = null
     }
 
     private fun attemptSignUp() {
@@ -108,6 +117,7 @@ class SignUpFragment : Fragment() {
     }
 
     private fun proceedSignUpAttempt() {
+        Log.v(LOG_TAG, "proceedSignUpAttempt()")
         var emailLayout: View? = null
         var passwordLayout: View? = null
         // retrieve the email text from the EditText
@@ -115,27 +125,31 @@ class SignUpFragment : Fragment() {
         // retrieve the password text from the EditText
         val userPassword = editTextPassword.text.toString()
 
-        // Check whether the user left the email field empty before submitting the form.
+        clearTextInputLayoutErrors()
+
+
+        // Abort sign up if email field is empty
         if (userEmail.isEmpty()) {
+            Log.v(LOG_TAG, "email is empty")
             emailInputLayout.error = getString(R.string.error_field_required)
             cancelUserLoginAttempt = true
             emailLayout = emailInputLayout
-            Log.v(LOG_TAG, "userEmailempty")
-        } else if (!isValidEmail(userEmail)) {
+        }
+        // Check for empty email field.
+        else if (!isValidEmail(userEmail)) {
+            Log.v(LOG_TAG, "invalid email")
+            emailInputLayout.error = getString(R.string.error_invalid_email)
             cancelUserLoginAttempt = true
             emailLayout = emailInputLayout
-            emailInputLayout.error = getString(R.string.error_invalid_email)
-
-        } else {
-            cancelUserLoginAttempt = false
-        }
-        // Check whether the user left the password field empty before submitting the form.
-        if (userPassword.isEmpty()) {
-            Log.v(LOG_TAG, "userPasswordempty")
+        } else if (userPassword.isEmpty()) {
+            Log.v(LOG_TAG, "password empty")
             passwordInputLayout.error = getString(R.string.error_field_required)
             cancelUserLoginAttempt = true
             passwordLayout = passwordInputLayout
-        } else if (!isValidPassword(userPassword)) {
+        }
+        // Check for a valid email.
+        else if (!isValidPassword(userPassword)) {
+            Log.v(LOG_TAG, "invalid password")
             passwordInputLayout.error = getString(R.string.error_at_least_six_character_password)
             cancelUserLoginAttempt = true
             passwordLayout = passwordInputLayout
@@ -144,67 +158,111 @@ class SignUpFragment : Fragment() {
         }
 
         if (cancelUserLoginAttempt) {
-            Log.v(LOG_TAG, "cancelUserLoginAttempt");
+            Log.v(LOG_TAG, "cancel attempt")
             //Draw users attention to the right EditText
             focusTextInputLayout(emailLayout, passwordLayout)
         } else {
-            attemptSignUp(userEmail, userPassword)
+            Log.v(LOG_TAG, "to ViewModel")
+            val user = UserEntity(username = userEmail, password = userPassword)
+            val state = viewModel.attemptSignUp(user)
+
+            //A network state is returned during the sign Up.
+            //It indicates the whole submission process from loading state to success or error state.
+            //The error state contains an Exception object. Feel free to handel it according to ur need.
+            //For now we are just checking for Already exists account and server response error.
+            observe(state) { networkState ->
+                setupLoadingIndicator(networkState)
+            }
         }
     }
 
-    private fun attemptSignUp(username: String, password: String) {
-        showProgress(true)
-        //setup a new user with provided inputs
-        val user = ParseUser()
-        user.apply {
-            setUsername(username)
-            setPassword(password)
-        }
-
-        user.signUpInBackground { error ->
-            if (error == null) {
-                //sign up successful , hide loading indicator
-                showProgress(false)
-                // proceed to HomeScreen
+    private fun setupLoadingIndicator(networkState: NetworkState) {
+        Log.v(LOG_TAG, "${networkState.status}")
+        when (networkState.status) {
+            Status.LOADING -> showProgress()
+            Status.SUCCESS -> {
+                hideProgress()
+                clearTextInputLayout()
                 navigateToTakePhotoScreen()
-            } else {
-                // There was an error, hide loading indicator
-                showProgress(false)
-                showServerError(error)
-                Log.e(LOG_TAG, "Failed to complete login process. Error message: ${error.message} Error code ${error.code}")
+            }
+            Status.ERROR -> {
+                hideProgress()
+                handleLogInErrors(networkState.exception)
             }
         }
+    }
+
+    /**
+     * TODO: handle server error
+     * */
+    private fun handleLogInErrors(exception: ParseException?) {
+        if (exception != null) {
+            when (exception.code) {
+                //Account already exists for this username
+                202 -> showErrorAtEmailField(exception, hasPasswordFieldError = false)
+                //Connection failure.
+                4 -> showErrorAtPasswordField(exception, hasEmailFieldError = false)
+                else -> showServiceNotAvailableError()
+            }
+        }
+    }
+
+    private fun showErrorAtEmailField(exception: ParseException, hasPasswordFieldError: Boolean) {
+        emailInputLayout.error = exception.message
+        passwordInputLayout.apply {
+            if (hasPasswordFieldError) {
+                error = " "
+            } else {
+                error = null
+            }
+        }
+    }
+
+    private fun showErrorAtPasswordField(exception: ParseException, hasEmailFieldError: Boolean) {
+        passwordInputLayout.error = exception.message
+        emailInputLayout.apply {
+            if (hasEmailFieldError) {
+                error = " "
+            } else {
+                error = null
+            }
+        }
+    }
+
+    private fun clearTextInputLayout() {
+        emailInputLayout.error = null
+        passwordInputLayout.error = null
+        editTextEmail.setText("")
+        editTextPassword.setText("")
+    }
+
+    private fun showProgress() {
+        buttonSignUp.text = ""
+        loginProgress.show()
+    }
+
+    private fun hideProgress() {
+        loginProgress.hide()
+        buttonSignUp.setText(R.string.label_login)
+    }
+
+    private fun showServiceNotAvailableError() {
+        emailInputLayout.error = null
+        passwordInputLayout.error = getString(R.string.error_service_not_available)
     }
 
     private fun navigateToTakePhotoScreen() {
         clearTextInputLayoutErrors()
         if (ParseUser.getCurrentUser().isAuthenticated) {
             val viewPager = signUpActivity?.provideViewPager()
-            viewPager?.setCurrentItem(1,true)
+            val nextPage = 1
+            viewPager?.setCurrentItem(nextPage, true)
         }
     }
 
     private fun clearTextInputLayoutErrors() {
         emailInputLayout.error = null
         passwordInputLayout.error = null
-    }
-
-    private fun showServerError(error: ParseException) {
-        val errorMessage = MutableLiveData<String>()
-        when (error.code) {
-            101 -> errorMessage.postValue(getString(R.string.error_invalid_email_or_password))
-        }
-        observe(errorMessage) { passwordInputLayout.error = it }
-    }
-
-    private fun showProgress(show: Boolean) {
-        if (show) {
-            buttonSignUp.text = ""
-            loginProgress.show()
-        } else {
-            loginProgress.hide()
-            buttonSignUp.setText(R.string.label_login)
-        }
     }
 
     /**

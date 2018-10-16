@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package com.ericafenyo.eyenight.ui.profile
+@file:JvmName("Repository")
 
-import android.arch.lifecycle.ViewModel
+package com.ericafenyo.eyenight.data
 
-class ProfileViewModel : ViewModel() {
-    // TODO: Implement the ViewModel
-}
+interface Repository : DataSource

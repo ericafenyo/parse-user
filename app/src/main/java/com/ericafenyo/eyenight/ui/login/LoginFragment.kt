@@ -26,7 +26,6 @@ import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -35,13 +34,19 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.ericafenyo.eyenight.ui.home.MainActivity
 import com.ericafenyo.eyenight.R
+import com.ericafenyo.eyenight.model.NetworkState
+import com.ericafenyo.eyenight.model.Status
+import com.ericafenyo.eyenight.model.UserEntity
+import com.ericafenyo.eyenight.EventNightViewModel
 import com.ericafenyo.eyenight.ui.signup.SignUpActivity
 import com.parse.ParseException
 import com.parse.ParseUser
 
+/**
+Contains our login logic*/
 class LoginFragment : Fragment() {
-
     companion object {
         /**
          * Use this factory method to create a new instance of this fragment.
@@ -52,8 +57,10 @@ class LoginFragment : Fragment() {
 
         private val LOG_TAG = LoginFragment::class.java.name
 
+        private const val LOGIN_SUCCESSFUL_REQUEST_CODE = 10514
     }
 
+    //View References from XML layout
     @BindView(R.id.edit_text_email) lateinit var editTextEmail: TextInputEditText
     @BindView(R.id.edit_text_password) lateinit var editTextPassword: TextInputEditText
     @BindView(R.id.text_input_layout_password) lateinit var passwordInputLayout: TextInputLayout
@@ -62,9 +69,8 @@ class LoginFragment : Fragment() {
     @BindView(R.id.button_sign_in) lateinit var buttonSignIn: MaterialButton
     @BindView(R.id.text_sign_up) lateinit var textSignUp: TextView
 
+    private lateinit var viewModel: EventNightViewModel
     private var cancelUserLoginAttempt = false
-
-    private lateinit var viewModel: LoginViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -78,18 +84,21 @@ class LoginFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
-
+        //Get instance to our viewModel
+        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
         buttonSignIn.setOnClickListener { attemptLogin() }
-        textSignUp.setOnClickListener { launchSignUpActivity() }
+        textSignUp.setOnClickListener { launchSignUpScreen() }
     }
 
-    private fun launchSignUpActivity() {
+    private fun launchSignUpScreen() {
         val intent = SignUpActivity.getStartIntent(activity as AppCompatActivity)
         startActivity(intent)
     }
 
-    //TODO: Remove this after test
+    /**
+     * Tries to Log in a user. If there is no internet connectivity,
+     * Alert the user to turn it on.
+     * */
     private fun attemptLogin() {
         if (hasInternetConnectivity(context)) {
             proceedLoginAttempt()
@@ -102,23 +111,21 @@ class LoginFragment : Fragment() {
     private fun proceedLoginAttempt() {
         var emailLayout: View? = null
         var passwordLayout: View? = null
-        // retrieve the email text from the EditText
+        // retrieve the email from the EditText
         val userEmail = editTextEmail.text.toString()
-        // retrieve the password text from the EditText
+        // retrieve the password from the EditText
         val userPassword = editTextPassword.text.toString()
 
-        // Check whether the user left the email field empty before submitting the form.
+        clearTextInputLayoutErrors()
+        // Check for empty email field.
         if (userEmail.isEmpty()) {
+            //email field is empty display error message
             emailInputLayout.error = getString(R.string.error_field_required)
             cancelUserLoginAttempt = true
             emailLayout = emailInputLayout
-            Log.v(LOG_TAG, "userEmailempty");
-        } else {
-            cancelUserLoginAttempt = false
-        }
-        // Check whether the user left the password field empty before submitting the form.
-        if (userPassword.isEmpty()) {
-            Log.v(LOG_TAG, "userPasswordempty");
+        } // Check for empty password field.
+        else if (userPassword.isEmpty()) {
+            //password field is empty display error message
             passwordInputLayout.error = getString(R.string.error_field_required)
             cancelUserLoginAttempt = true
             passwordLayout = passwordInputLayout
@@ -127,19 +134,34 @@ class LoginFragment : Fragment() {
         }
 
         //NOTE: I am not implementing email and password validation since a user who has already being registered
-        //may receive an error if the email validation pattern changes in the future. Feel free to add
+        //may receive an error. That is  if the email validation pattern changes in the future. Feel free to add
         //a validation if needed according to your use case.
 
-        //To validate the inputs from the user, we will simply rely on the server-end validation. That is
-        //The login status received from the server.
+        //To validate the inputs from the user, we will simply rely on the server-end validation.
 
+        //Check if there were no errors during the form submission
         if (cancelUserLoginAttempt) {
-            Log.v(LOG_TAG, "cancelUserLoginAttempt");
+            //There was an error
             //Draw users attention to the right EditText
             focusTextInputLayout(emailLayout, passwordLayout)
         } else {
-            attemptLogin(userEmail, userPassword)
+            //No errors, process to the log in process
+            val user = UserEntity(username = userEmail, password = userPassword)
+            val state = viewModel.attemptLogin(user)
+
+            //A network state is returned during the submission process.
+            //It indicates the whole submission process from loading state to success or error state.
+            //The error state contains an Exception object. Feel free to handel it according to ur need.
+            //For now we are just checking for Invalid username/Password and server response error.
+            observe(state) { networkState ->
+                manageNetworkState(networkState)
+            }
         }
+    }
+
+    private fun clearTextInputLayoutErrors() {
+        emailInputLayout.error = null
+        passwordInputLayout.error = null
     }
 
     private fun showConnectivityAlertDialog() {
@@ -150,8 +172,6 @@ class LoginFragment : Fragment() {
                     .setPositiveButton("Try again") { dialog, _ -> dialog.dismiss() }
             alertDialog.show()
         }
-
-
     }
 
     /**
@@ -167,54 +187,66 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun attemptLogin(userEmail: String, userPassword: String) {
-        Log.v(LOG_TAG, "attemptLogin")
-        showProgress(true)
-        ParseUser.logInInBackground(userEmail, userPassword) { user, error ->
-            if (user != null) {
-                //login successful , hide loading indicator
-                showProgress(false)
-                // proceed to HomeScreen
-                navigateBackToHomeScreen()
-            } else {
-                // There was an error, hide loading indicator
-                showProgress(false)
-                showServerError(error)
-                Log.e(LOG_TAG, "Failed to complete login process. Error message: ${error.message} Error code ${error.code}")
+    private fun clearTextInputLayout() {
+        emailInputLayout.error = null
+        passwordInputLayout.error = null
+        editTextEmail.setText("")
+        editTextPassword.setText("")
+    }
+
+    private fun manageNetworkState(networkState: NetworkState) {
+        Log.v(LOG_TAG, "${networkState.status}")
+        when (networkState.status) {
+            Status.LOADING -> showProgress()
+            Status.SUCCESS -> {
+                hideProgress()
+                clearTextInputLayout()
+                launchHomeScreen()
+            }
+            Status.ERROR -> {
+                hideProgress()
+                handleLogInErrors(networkState.exception)
             }
         }
     }
 
-    private fun showServerError(error: ParseException) {
-        val errorMessage = MutableLiveData<String>()
-        when (error.code) {
-            101 -> errorMessage.postValue(getString(R.string.error_invalid_email_or_password))
-        }
-        observe(errorMessage) { passwordInputLayout.error = it }
-    }
-
-    private fun navigateBackToHomeScreen() {
-        clearTextInputLayoutErrors()
+    private fun launchHomeScreen() {
+        val intent = MainActivity.getStartIntent(activity as AppCompatActivity)
         if (ParseUser.getCurrentUser().isAuthenticated) {
+            startActivityForResult(intent, LOGIN_SUCCESSFUL_REQUEST_CODE)
             activity?.finish()
-        }
-    }
-
-    private fun clearTextInputLayoutErrors() {
-        emailInputLayout.error = null
-        passwordInputLayout.error = null
-    }
-
-    private fun showProgress(show: Boolean) {
-        if (show) {
-            buttonSignIn.text = ""
-            loginProgress.show()
         } else {
-            loginProgress.hide()
-            buttonSignIn.setText(R.string.label_login)
+            showServiceNotAvailableError()
         }
     }
 
+    private fun showServiceNotAvailableError() {
+        passwordInputLayout.error = getString(R.string.error_service_not_available)
+    }
+
+    /**
+     * TODO: handle server error
+     * */
+    private fun handleLogInErrors(exception: ParseException?) {
+        if (exception != null) {
+            when (exception.code) {
+                101 -> {
+                    emailInputLayout.error = " "
+                    passwordInputLayout.error = getString(R.string.error_invalid_email_or_password)
+                }
+            }
+        }
+    }
+
+    private fun showProgress() {
+        buttonSignIn.text = ""
+        loginProgress.show()
+    }
+
+    private fun hideProgress() {
+        loginProgress.hide()
+        buttonSignIn.setText(R.string.label_login)
+    }
 
     /**
      * returns a boolean based on the internet connectivity of the device
@@ -237,7 +269,8 @@ fun View.hide() {
     visibility = View.GONE
 }
 
+/**
+ * Observes a LiveData*/
 fun <T> LifecycleOwner.observe(liveData: LiveData<T>, block: (T) -> Unit) {
     liveData.observe(this, Observer { block(it!!) })
 }
-

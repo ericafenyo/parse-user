@@ -41,16 +41,5 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login_activity)
-        ButterKnife.bind(this)
-
-        // Inflate fragment only if "savedInstanceState == null".
-        // This prevents multiple fragment creation
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, LoginFragment.newInstance())
-                    .commitNow()
-        }
     }
-
-
 }

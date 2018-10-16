@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ericafenyo.eyenight">
 
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,18 +18,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
-            android:theme="@style/AppTheme.Fullscreen">
+        <activity android:name=".ui.home.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.login.LoginActivity"
-            android:theme="@style/AppTheme.Fullscreen"/>
-        <activity android:name=".ProfileActivity" android:theme="@style/AppTheme.Fullscreen"/>
-        <activity android:name=".ui.signup.SignUpActivity" android:theme="@style/AppTheme.Fullscreen"></activity>
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity android:name=".ui.profile.ProfileActivity" />
+        <activity
+            android:name=".ui.signup.SignUpActivity"
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity android:name=".ui.product.ProductActivity" />
+        <activity android:name=".ui.event.EventActivity"></activity>
     </application>
 
 </manifest>

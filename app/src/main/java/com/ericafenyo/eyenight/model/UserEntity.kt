@@ -19,7 +19,7 @@ package com.ericafenyo.eyenight.model
 import com.parse.ParseFile
 
 data class UserEntity(
-        val userName: String = "",
+        val username: String = "",
         val password: String = "",
         val profileImage: ParseFile? = null
 )

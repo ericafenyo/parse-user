@@ -25,26 +25,22 @@
         android:id="@+id/text_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="64dp"
-        android:layout_marginEnd="8dp"
         android:text="@string/label_add_your_photo"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/image_profile"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginTop="24dp"
-        android:foreground="?selectableItemBackground"
+        android:layout_width="@dimen/startup_profile_image_view_size"
+        android:layout_height="@dimen/startup_profile_image_view_size"
+        android:layout_marginTop="@dimen/margin_padding_extra_large"
         android:background="@drawable/border"
+        android:foreground="?selectableItemBackground"
         android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="@+id/text_title"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/text_title"
         app:layout_constraintTop_toBottomOf="@+id/text_title" />
 
@@ -53,10 +49,9 @@
         style="@style/Widget.MaterialComponents.Chip.Action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="@dimen/margin_padding_extra_large"
         android:text="@string/action_new_photo"
         app:layout_constraintEnd_toStartOf="@+id/chip_open_gallery"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/image_profile" />
 
@@ -72,18 +67,17 @@
         app:layout_constraintTop_toTopOf="@+id/chip_new_photo" />
 
     <TextView
-        android:id="@+id/text_skip"
+        android:id="@+id/text_finish"
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:background="@color/colorPrimary_50"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?selectableItemBackground"
         android:gravity="center"
-        android:text="@string/action_skip"
+        android:text="@string/action_finish"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
-
 </android.support.constraint.ConstraintLayout>

@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-package com.ericafenyo.eyenight.ui.login
+@file:JvmName("Product")
 
-import android.arch.lifecycle.ViewModel
+package com.ericafenyo.eyenight.model
 
-class LoginViewModel : ViewModel() {
-
-}
+data class Product(
+        val objectId: String,
+        val publicProduct: Boolean,
+        val price: Number?,
+        val name: String?,
+        val order: Number?,
+        val maxQuantity: Number?,
+        val quantityLeft: Number?,
+        val event: Event
+)

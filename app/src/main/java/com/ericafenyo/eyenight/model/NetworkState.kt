@@ -13,11 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("setNetworkState")
 
-package com.ericafenyo.eyenight.ui.signup
+package com.ericafenyo.eyenight.model
 
-import android.arch.lifecycle.ViewModel;
+import com.parse.ParseException
+import java.lang.NullPointerException
 
-class SignUpViewModel : ViewModel() {
-    // TODO: Implement the ViewModel
+enum class Status {
+    LOADING,
+    SUCCESS,
+    ERROR
+}
+
+data class NetworkState(val status: Status, val exception: ParseException? = null) {
+    companion object {
+        @JvmStatic
+        val LOADING = NetworkState(Status.LOADING)
+        @JvmStatic
+        val SUCCESS = NetworkState(Status.SUCCESS)
+        @JvmStatic
+        val ERROR = NetworkState(Status.ERROR)
+    }
 }
