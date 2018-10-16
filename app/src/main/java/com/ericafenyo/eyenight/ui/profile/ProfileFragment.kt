@@ -192,6 +192,9 @@ class ProfileFragment : Fragment() {
             }
             Status.ERROR -> {
                 hideProgress()
+                when (networkState.exception?.code) {
+                    209 -> launchLoginScreen()
+                }
             }
         }
     }
