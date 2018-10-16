@@ -1,3 +1,86 @@
 <resources>
+    <!--App name-->
     <string name="app_name">Eyenight</string>
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     - Texts used as actions                                                                 -
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <string name="action_skip">Skip</string>
+    <string name="action_new_photo">New Photo</string>
+    <string name="action_open_gallery">Open gallery</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_remove_user_account">Yes, Remove My Account</string>
+    <string name="action_finish">Finish</string>
+    <string name="action_already_have_login">I already have a login</string>
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     - Texts used as error messages                                                                -
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <string name="error_invalid_email_or_password">The Email or Password you entered is incorrect</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     - Texts used as titles                                                                        -
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <string name="title_profile">Profile</string>
+    <string name="title_credits">Credits</string>
+    <string name="title_sign_out">Sign out</string>
+    <string name="title_events">Events</string>
+    <string name="title_products">Products</string>
+    <string name="title_prompt_account_removal">Your account will be deleted permanently!</string>
+    <string name="label_login">Login</string>
+    <string name="label_sign_up">Sign up</string>
+
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    - Texts used for Accessibility purposes                                                       -
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <string name="accessibility_launch_sign_up_screen">A button that opens a user sign up screen</string>
+    <string name="accessibility_information_text">A message text to inform a user about a specific subject</string>
+    <string name="accessibility_login_button">A button for performing a login action</string>
+    <string name="accessibility_event_name">Event name</string>
+    <string name="accessibility_even_end_date">Event end date</string>
+    <string name="accessibility_event_location">Even location</string>
+    <string name="accessibility_event_abstract">Event Abstract</string>
+    <string name="accessibility_delete_account">A button that deletes your account completely from the database</string>
+    <string name="accessibility_profile_image">A profile Image</string>
+    <string name="accessibility_edit_user_details">Edit user details</string>
+    <string name="accessibility_product_image">An image of a product</string>
+    <string name="accessibility_product_name">The name of the product</string>
+    <string name="accessibility_product_price">The price of the product in Euro</string>
+    <string name="accessibility_dollar_sign_icon">Dollar sign</string>
+    <string name="accessibility_backdrop_image">Backdrop image</string>
+    <string name="accessibility_illustrative_icon">An illustrative icon</string>
+    <string name="accessibility_email_input">An Input field for the user\'s email address </string>
+    <string name="accessibility_password_input">An Input field for the user\'s password </string>
+    <string name="accessibility_sign_up_button">A button for performing a sign up action</string>
+    <string name="accessibility_go_back_to_login_screen">A button to navigation to the Login screen</string>
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     - Texts used as info messages                                                                 -
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <string name="msg_offline_state">Your Network is unavailable. Check your data or wifi connection.</string>
+    <string name="error_at_least_six_character_password">Password must be at least 6 to 10 characters long.</string>
+    <string name="mgs_no_account">No account?</string>
+    <string name="error_service_not_available">We are sorry but the service is not available. Please try again later</string>
+    <string name="action_sign_up">Sign up</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_email">Email</string>
+    <string name="label_add_your_photo">Add your photo</string>
+
+    <string name="action_delete_account">Delete account</string>
+    <string name="action_log_out">Log out</string>
+
+
+    <string name="label_abstract">Abstract</string>
+
+    <string name="msg_prompt_account_removal">Are you sure you want to proceed?</string>
+
+
 </resources>

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2018 Eric Afenyo
  *
@@ -15,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.ericafenyo.eyenight
+package com.ericafenyo.eyenight.model
 
-import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
+import com.parse.ParseFile
 
-class MainActivity : AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-    }
-}
+data class UserEntity(
+        val username: String = "",
+        val password: String = "",
+        val profileImage: ParseFile? = null
+)
