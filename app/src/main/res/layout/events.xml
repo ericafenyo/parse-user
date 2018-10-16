@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  Copyright (C) 2018 Eric Afenyo
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/text_event_name"
+        style="@style/TextAppearance.MaterialComponents.Headline5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:contentDescription="@string/accessibility_event_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@tools:sample/full_names" />
+
+    <TextView
+        android:id="@+id/text_product_price"
+        style="@style/TextAppearance.MaterialComponents.Headline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:contentDescription="@string/accessibility_product_price"
+        app:layout_constraintBottom_toBottomOf="@+id/text_event_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/text_event_name"
+        tools:text="$4.50" />
+
+    <TextView
+        android:id="@+id/text_event_end_date"
+        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_padding_small"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/accessibility_even_end_date"
+        android:lineSpacingExtra="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/text_event_name"
+        app:layout_constraintTop_toBottomOf="@+id/text_event_name"
+        tools:text="@tools:sample/date/mmddyy" />
+
+    <TextView
+        android:id="@+id/text_event_location"
+        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/accessibility_event_location"
+        android:lineSpacingExtra="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/text_event_end_date"
+        app:layout_constraintTop_toBottomOf="@+id/text_event_end_date"
+        tools:text="@tools:sample/cities" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dividerHeight"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/margin_padding_small"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:background="@color/dividerColor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_event_location" />
+
+    <TextView
+        android:id="@+id/text_abstract_title"
+        style="@style/TextAppearance.MaterialComponents.Subtitle1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/margin_padding_small"
+        android:contentDescription="@string/accessibility_information_text"
+        android:text="@string/label_abstract"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+    <TextView
+        android:id="@+id/text_event_abstract"
+        style="@style/Base.TextAppearance.AppCompat.Body1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/accessibility_event_abstract"
+        android:lineSpacingExtra="12sp"
+        app:layout_constraintStart_toStartOf="@+id/text_abstract_title"
+        app:layout_constraintTop_toBottomOf="@+id/text_abstract_title"
+        tools:text="@tools:sample/lorem" />
+
+</android.support.constraint.ConstraintLayout>

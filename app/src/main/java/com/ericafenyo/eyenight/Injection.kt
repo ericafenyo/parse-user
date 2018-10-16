@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
+@file:JvmName("Injection")
+
 package com.ericafenyo.eyenight
 
-import com.ericafenyo.eyenight.model.UserEntity
-import com.parse.ParseFile
+import com.ericafenyo.eyenight.data.DataSource
+import com.ericafenyo.eyenight.data.EyeNightDataSource
+import com.ericafenyo.eyenight.data.EyeNightRepository
+import com.ericafenyo.eyenight.data.Repository
 
-interface DataSource {
+object Injection {
 
-    fun signUp(user: UserEntity)
+    fun provideRepository(): Repository = EyeNightRepository(provideDataSource())
 
-    fun logOut()
-
-    fun addProfileImage(parseFile: ParseFile)
-
+    private fun provideDataSource(): DataSource = EyeNightDataSource
 }

@@ -1,13 +1,13 @@
-[![Build Status](https://travis-ci.org/ericafenyo/parse-user.svg?branch=master)](https://travis-ci.org/ericafenyo/parse-user)
+<!-- [![Build Status](https://travis-ci.org/ericafenyo/parse-user.svg?branch=master)](https://travis-ci.org/ericafenyo/parse-user) -->
 
 ### Parse-user
 Parse-user is a test application to showcase the creation of user accounts using a [Parse server](https://parseplatform.org).
 
 ### Checklist
-- [ ] Register a user with a valid email and a password requiring at least 6 characters.
-- [ ] Allow users to add a profile picture.
-- [ ] Create a login screen using email as key and password.
-- [ ] Ensure that the app runs smoothly with great UI/UX.
+- [x] Register a user with a valid email and a password requiring at least 6 characters.
+- [x] Allow users to add a profile picture.
+- [x] Create a login screen using email as key and password.
+- [x] Ensure that the app runs smoothly with great UI/UX.
 
 ### Prerequisite  
 A [Parse server](https://parseplatform.org) with a server URL, an App Id and a Client Key.
@@ -15,9 +15,9 @@ A [Parse server](https://parseplatform.org) with a server URL, an App Id and a C
 ### Basic Flow
 ![flow-diagram](https://github.com/ericafenyo/parse-user/raw/master/assets/basic_flow.png)
 
-### Mockup screens
-The app uses 5 different screens excluding a screen reserved for credits.
-![mockup-screens](https://github.com/ericafenyo/parse-user/raw/master/assets/mock.png)
+### Screens
+The app uses 6 different screens
+![mockup-screens](https://github.com/ericafenyo/parse-user/raw/master/assets/screens.png)
 
 ### Dependencies
 * [Android Support Libraries](https://developer.android.com/topic/libraries/support-library/)

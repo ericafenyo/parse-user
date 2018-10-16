@@ -18,14 +18,15 @@ package com.ericafenyo.eyenight.ui.signup
 
 
 import android.app.Activity.RESULT_OK
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.design.chip.Chip
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -34,24 +35,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.ericafenyo.eyenight.ui.home.MainActivity
 import com.ericafenyo.eyenight.R
-import com.ericafenyo.eyenight.utils.convertBitmapToByteArray
-import com.parse.*
+import com.ericafenyo.eyenight.EventNightViewModel
+import com.ericafenyo.eyenight.ui.login.observe
+import com.parse.ParseFile
+import com.parse.ParseUser
 import java.io.*
-import java.lang.NullPointerException
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AddPhotoFragment.newInstance] factory method to
- * create an instance of this fragment.
- *
- */
 class AddPhotoFragment : Fragment() {
 
     companion object {
@@ -64,16 +55,17 @@ class AddPhotoFragment : Fragment() {
 
         private val LOG_TAG = AddPhotoFragment::class.java.name
 
-
-        private const val REQUEST_IMAGE_CAPTURE = 1
-        private const val REQUEST_IMAGE_GALLERY = 2
+        private const val REQUEST_IMAGE_CAPTURE = 7
+        private const val REQUEST_IMAGE_GALLERY = 3
+        const val SIGN_UP_SUCCESSFUL_REQUEST_CODE = 2
     }
-
 
     @BindView(R.id.chip_new_photo) lateinit var chipNewPhoto: Chip
     @BindView(R.id.chip_open_gallery) lateinit var chipOpenGallery: Chip
     @BindView(R.id.image_profile) lateinit var imageProfile: ImageView
-    @BindView(R.id.text_skip) lateinit var textSkip: TextView
+    @BindView(R.id.text_finish) lateinit var textSkip: TextView
+
+    private lateinit var viewModel: EventNightViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -88,33 +80,19 @@ class AddPhotoFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        viewModel = ViewModelProviders.of(this).get(EventNightViewModel::class.java)
         chipNewPhoto.setOnClickListener { dispatchTakePictureIntent() }
         chipOpenGallery.setOnClickListener { dispatchOpenGalleryIntent() }
         imageProfile.setOnClickListener { dispatchOpenGalleryIntent() }
-        textSkip.setOnClickListener { }
+        textSkip.setOnClickListener { navigateToHomeScreen() }
     }
 
-//    private fun getUserObject() {
-//        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.test)
-//        val stream = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-//        val byteArray = stream.toByteArray()
-//        val imageFile = ParseFile("profile.jpg", byteArray)
-//        val userObject = ParseObject.create("_User")
-//        userObject.put("username", "USERNAME")
-//        userObject.put("password", "password")
-//        userObject.put("image", imageFile)
-//        userObject.saveInBackground {
-//            if (it != null) {
-//                Log.e(LOG_TAG, it.message)
-//            }
-//        }
-//    }
-
     private fun navigateToHomeScreen() {
-//        if (ParseUser.getCurrentUser() != null) {
-////            activity?.finish()
-////        }
+        val intent = MainActivity.getStartIntent(activity as AppCompatActivity)
+        if (ParseUser.getCurrentUser().isAuthenticated) {
+            startActivityForResult(intent, SIGN_UP_SUCCESSFUL_REQUEST_CODE)
+            activity?.finish()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -124,108 +102,71 @@ class AddPhotoFragment : Fragment() {
                 REQUEST_IMAGE_CAPTURE -> {
                     val bitmap = data?.extras?.get("data") as Bitmap
                     imageProfile.setImageBitmap(bitmap)
-                    val filePath = saveImageProfile(bitmap)
-                    Log.v(LOG_TAG, "$filePath")
-
+                    saveProfileImageToParseDatabase(bitmap)
                 }
-
                 REQUEST_IMAGE_GALLERY -> {
                     val imageUri = data?.data
                     try {
                         val bitmap = MediaStore.Images.Media.getBitmap(activity?.contentResolver, imageUri)
                         imageProfile.setImageBitmap(bitmap)
-                        val filePath = saveImageProfile(bitmap)
-                        Log.v(LOG_TAG, "$filePath")
-                        val bitmapByteArray = convertBitmapToByteArray(bitmap)
-                        Log.v(LOG_TAG, "$bitmapByteArray")
-                        val fileName = "profile.jpg"
-                        saveParseFile(fileName, bitmapByteArray)
+                        saveImageProfile(bitmap)
+                        saveProfileImageToParseDatabase(bitmap)
                     } catch (e: Exception) {
-                        Log.e(LOG_TAG, "Failed to set UserEntity Profile : $e")
+                        Log.e(LOG_TAG, "Failed to set Save ProfileImage : $e")
                     }
                 }
             }
         }
     }
 
-    private fun saveParseFile(fileName: String, bitmapByteArray: ByteArray) {
-        val parseFile = ParseFile("profile.jpg", "Hello".toByteArray())
-        parseFile.saveInBackground(
-                { error: ParseException ->
-                    Log.e(LOG_TAG, "$error")
-                }, { progress ->
-            Log.e(LOG_TAG, "$progress")
-        })
+    private fun saveProfileImageToParseDatabase(bitmap: Bitmap?) {
+        if (bitmap != null) {
+            val parseFile = provideParseImageFile(bitmap)
+            if (ParseUser.getCurrentUser().objectId != null) {
+                val state = viewModel.addProfileImage(parseFile, ParseUser.getCurrentUser().objectId)
+
+                observe(state) {
+
+                }
+            }
+        } else {
+            navigateToHomeScreen()
+        }
     }
 
-    private fun saveImageProfile(bitmap: Bitmap? = null): String? {
+    /** Save image to Disk*/
+    private fun saveImageProfile(bitmap: Bitmap? = null): String {
         var outputStream: FileOutputStream? = null
-        val fileDirectory = context?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val fileName = "profile.jpg"
-        val profileImage = File(fileDirectory, fileName)
+        val profileImage = provideProfileImageFile()
         try {
             outputStream = FileOutputStream(profileImage)
             if (bitmap != null) {
                 //save the bitmap to disk
                 writeBitmap(bitmap, outputStream)
             }
-        } catch (e: FileNotFoundException) {
-            // File not found
-            Log.v(LOG_TAG, e.message)
-        } catch (e: NullPointerException) {
+        } catch (exception: FileNotFoundException) {
+            // If the file exists but is a directory rather than a regular file
+            // does not exist but cannot be created, or cannot be opened for any other reason
+            Log.v(LOG_TAG, exception.message)
+        } catch (exception: NullPointerException) {
             // FileName is null
-            Log.e(LOG_TAG, e.message)
+            Log.e(LOG_TAG, exception.message)
         } finally {
             try {
                 outputStream?.close()
-            } catch (e: IOException) {
+            } catch (exception: IOException) {
                 //I/O error occurs.
-                Log.v(LOG_TAG, "IO Error : ${e.message}")
+                Log.v(LOG_TAG, exception.message)
             }
         }
-
-        if (bitmap != null) {
-            val quality = 100
-            bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream)
-        }
-
-        return fileDirectory?.absolutePath
-
-//
-//
-//        try {
-//            fos = FileOutputStream(mypath)
-//            // Use the compress method on the BitMap object to write image to the OutputStream
-//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        } finally {
-//            try {
-//                fos!!.close()
-//            } catch (e: IOException) {
-//                e.printStackTrace()
-//            }
-//
-//        }
-//        return directory.absolutePath
+        return profileImage.absolutePath
     }
 
-    private fun writeBitmap(bitmap: Bitmap, outputStream: FileOutputStream?) {
-        val quality = 100
-        //The compress method writes a compressed version of the bitmap to our outputStream.
-        bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream)
+    private fun provideProfileImageFile(): File {
+        val fileDirectory = context?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val fileName = "profile.jpg"
+        return File(fileDirectory, fileName)
     }
-
-    var mCurrentPhotoPath: String = ""
-
-//    @Throws(IOException::class)
-//    private fun createImageFile(): File {
-//        val storageDirectory = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-//        return File.createTempFile("profile", ".jpg", storageDirectory).apply {
-//            mCurrentPhotoPath = absolutePath
-//        }
-//    }
-
 
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     private fun dispatchOpenGalleryIntent() {
@@ -249,4 +190,35 @@ class AddPhotoFragment : Fragment() {
             }
         }
     }
+}
+
+fun provideParseImageFile(bitmap: Bitmap): ParseFile {
+    val stream = ByteArrayOutputStream()
+    bitmap.putInto(stream)
+    val byteArray = stream.toByteArray()
+    return ParseFile("profile.jpg", byteArray)
+}
+
+/**
+ * Write a compressed version of a bitmap to the specified outputstream.
+ *
+ * @receiver a [Bitmap] to be saved to the outputstream
+ * @param stream outputStream to write the compressed data.
+ * @return true if successfully compressed to the specified stream.
+ */
+fun Bitmap.putInto(stream: OutputStream): Boolean {
+    return compress(Bitmap.CompressFormat.PNG, 100, stream)
+}
+
+/**
+ * Write a compressed version of a bitmap to the specified outputstream.
+ *
+ * @param bitmap a [Bitmap] to be saved to the outputstream
+ * @param stream   The outputstream to write the compressed data.
+ * @return true if successfully compressed to the specified stream.
+ * */
+fun writeBitmap(bitmap: Bitmap, outputStream: OutputStream): Boolean {
+    val quality = 100
+    //The compress method writes a compressed version of the bitmap to our outputStream.
+    return bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream)
 }

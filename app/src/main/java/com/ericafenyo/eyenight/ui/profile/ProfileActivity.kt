@@ -14,18 +14,33 @@
  * limitations under the License.
  */
 
-package com.ericafenyo.eyenight
+package com.ericafenyo.eyenight.ui.profile
 
-import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import com.ericafenyo.eyenight.ui.profile.ProfileFragment
+import android.support.v7.app.AppCompatActivity
+import com.ericafenyo.eyenight.R
 
-class ProfileActivity : Activity() {
+class ProfileActivity : AppCompatActivity() {
+
+    companion object {
+        /**
+         * Returns a newly created Intent that can be used to launch the activity.
+         *
+         * @param packageContext A Context of the application package that will start this class.
+         * Example [android.app.Activity].
+         */
+
+        fun getStartIntent(packageContext: Context): Intent {
+            val intent = Intent(packageContext, ProfileActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            return intent
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.profile_activity)
-
     }
-
 }

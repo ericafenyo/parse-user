@@ -23,6 +23,8 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentStatePagerAdapter
 import java.util.ArrayList
 
+/**
+ * Viewpager Adapter for loading different fragments*/
 class PagerAdapter : FragmentStatePagerAdapter {
 
     private val fragments = ArrayList<Fragment>()
