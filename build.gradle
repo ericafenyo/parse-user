@@ -44,4 +44,8 @@ ext {
     epoxy_version = '2.14.0'
     picasso_version = '2.71828'
     parse_version = '1.18.5'
+    circle_indicator_version = '1.2.2'
+    butterknife_version = '8.8.1'
+    circular_imageview_version = '2.2.0'
+    coroutines_version = '0.30.2'
 }
