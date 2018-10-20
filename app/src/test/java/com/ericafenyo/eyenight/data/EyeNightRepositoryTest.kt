@@ -19,13 +19,12 @@ package com.ericafenyo.eyenight.data
 import android.arch.core.executor.testing.InstantTaskExecutorRule
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import com.ericafenyo.eyenight.Result
 import com.ericafenyo.eyenight.model.NetworkState
-import com.ericafenyo.eyenight.model.Product
 import com.ericafenyo.eyenight.model.UserEntity
 import com.parse.ParseFile
 import org.junit.Before
 import org.junit.Rule
-
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -41,8 +40,8 @@ class EyeNightRepositoryTest {
     val instantExecutor = InstantTaskExecutorRule()
     private lateinit var repository: Repository
     private val user = UserEntity(username = "name@example.com", password = "password")
-    val parseFile = ParseFile("FILE".toByteArray())
-    val networkState = MutableLiveData<NetworkState>()
+    private val parseFile = ParseFile("FILE".toByteArray())
+    private val networkState = MutableLiveData<NetworkState>()
 
     @Mock
     lateinit var dataSource: DataSource
@@ -53,14 +52,14 @@ class EyeNightRepositoryTest {
         networkState.postValue(NetworkState.SUCCESS)
         // Get reference to the class under test
         repository = EyeNightRepository(dataSource)
-
+//
         Mockito.`when`(dataSource.signUp(user)).thenReturn(networkState)
         Mockito.`when`(dataSource.logIn(user)).thenReturn(networkState)
         Mockito.`when`(dataSource.logOut()).thenReturn(networkState)
         Mockito.`when`(dataSource.deleteAccount()).thenReturn(networkState)
         Mockito.`when`(dataSource.addProfileImage(parseFile, "objectId")).thenReturn(networkState)
         Mockito.`when`(dataSource.requestPasswordReset(user.username)).thenReturn(networkState)
-        Mockito.`when`(dataSource.getProducts()).thenReturn(Listing(emptyList<Product>().toLiveData(), networkState))
+        Mockito.`when`(dataSource.getProducts()).thenReturn(Result.Loading.toLiveData())
     }
 
     @Test
@@ -124,12 +123,11 @@ class EyeNightRepositoryTest {
 
     @Test
     fun getProducts() {
-        val listing = repository.getProducts()
-        listing.networkState.observeForever {
+        val result = repository.getProducts()
+        result.observeForever {
             assert(it.notNull)
-            assert(it == NetworkState.SUCCESS)
+            assert(it == Result.Loading)
         }
-        assert(listing.data.notNull)
         Mockito.verify(dataSource).getProducts()
     }
 }
@@ -138,6 +136,6 @@ private val Any?.notNull: Boolean
     get() = this != null
 
 /**
- * Wraps list of [E] in a LiveData*/
-private fun <E> List<E>.toLiveData(): LiveData<List<E>> = MutableLiveData()
+ * Wraps [T] in a LiveData*/
+private fun <T> T.toLiveData(): LiveData<T> = MutableLiveData()
 

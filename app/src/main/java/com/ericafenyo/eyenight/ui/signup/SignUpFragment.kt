@@ -42,6 +42,7 @@ import com.ericafenyo.eyenight.ui.login.hide
 import com.ericafenyo.eyenight.ui.login.observe
 import com.ericafenyo.eyenight.ui.login.show
 import com.parse.ParseException
+import com.parse.ParseException.*
 import com.parse.ParseUser
 
 /**
@@ -56,7 +57,9 @@ class SignUpFragment : Fragment() {
         @JvmStatic
         fun newInstance() = SignUpFragment()
 
+        const val CONNECTION_FAILED = 4
         private val LOG_TAG = SignUpFragment::class.java.name
+
     }
 
     @BindView(R.id.edit_text_email) lateinit var editTextEmail: TextInputEditText
@@ -117,7 +120,6 @@ class SignUpFragment : Fragment() {
     }
 
     private fun proceedSignUpAttempt() {
-        Log.v(LOG_TAG, "proceedSignUpAttempt()")
         var emailLayout: View? = null
         var passwordLayout: View? = null
         // retrieve the email text from the EditText
@@ -125,44 +127,42 @@ class SignUpFragment : Fragment() {
         // retrieve the password text from the EditText
         val userPassword = editTextPassword.text.toString()
 
+        //Clear all error messages
         clearTextInputLayoutErrors()
 
+        when {
+            userEmail.isEmpty() -> {
+                emailInputLayout.error = getString(R.string.error_field_required)
+                cancelUserLoginAttempt = true
+                emailLayout = emailInputLayout
+            }
 
-        // Abort sign up if email field is empty
-        if (userEmail.isEmpty()) {
-            Log.v(LOG_TAG, "email is empty")
-            emailInputLayout.error = getString(R.string.error_field_required)
-            cancelUserLoginAttempt = true
-            emailLayout = emailInputLayout
-        }
-        // Check for empty email field.
-        else if (!isValidEmail(userEmail)) {
-            Log.v(LOG_TAG, "invalid email")
-            emailInputLayout.error = getString(R.string.error_invalid_email)
-            cancelUserLoginAttempt = true
-            emailLayout = emailInputLayout
-        } else if (userPassword.isEmpty()) {
-            Log.v(LOG_TAG, "password empty")
-            passwordInputLayout.error = getString(R.string.error_field_required)
-            cancelUserLoginAttempt = true
-            passwordLayout = passwordInputLayout
-        }
-        // Check for a valid email.
-        else if (!isValidPassword(userPassword)) {
-            Log.v(LOG_TAG, "invalid password")
-            passwordInputLayout.error = getString(R.string.error_at_least_six_character_password)
-            cancelUserLoginAttempt = true
-            passwordLayout = passwordInputLayout
-        } else {
-            cancelUserLoginAttempt = false
+            !isValidEmail(userEmail) -> {
+                emailInputLayout.error = getString(R.string.error_invalid_email)
+                cancelUserLoginAttempt = true
+                emailLayout = emailInputLayout
+            }
+            userPassword.isEmpty() -> {
+                passwordInputLayout.error = getString(R.string.error_field_required)
+                cancelUserLoginAttempt = true
+                passwordLayout = passwordInputLayout
+            }
+
+            !isValidPassword(userPassword) -> {
+                passwordInputLayout.error = getString(R.string.error_at_least_six_character_password)
+                cancelUserLoginAttempt = true
+                passwordLayout = passwordInputLayout
+            }
+
+            else -> {
+                cancelUserLoginAttempt = false
+            }
         }
 
         if (cancelUserLoginAttempt) {
-            Log.v(LOG_TAG, "cancel attempt")
             //Draw users attention to the right EditText
             focusTextInputLayout(emailLayout, passwordLayout)
         } else {
-            Log.v(LOG_TAG, "to ViewModel")
             val user = UserEntity(username = userEmail, password = userPassword)
             val state = viewModel.attemptSignUp(user)
 
@@ -177,7 +177,6 @@ class SignUpFragment : Fragment() {
     }
 
     private fun setupLoadingIndicator(networkState: NetworkState) {
-        Log.v(LOG_TAG, "${networkState.status}")
         when (networkState.status) {
             Status.LOADING -> showProgress()
             Status.SUCCESS -> {
@@ -192,16 +191,17 @@ class SignUpFragment : Fragment() {
         }
     }
 
+
     /**
      * TODO: handle server error
      * */
     private fun handleLogInErrors(exception: ParseException?) {
         if (exception != null) {
             when (exception.code) {
-                //Account already exists for this username
-                202 -> showErrorAtEmailField(exception, hasPasswordFieldError = false)
-                //Connection failure.
-                4 -> showErrorAtPasswordField(exception, hasEmailFieldError = false)
+                //Account already exists for this username (202)
+                USERNAME_TAKEN -> showErrorAtEmailField(exception, hasPasswordFieldError = false)
+                //Connection failure.(4)
+                CONNECTION_FAILED -> showErrorAtPasswordField(exception, hasEmailFieldError = false)
                 else -> showServiceNotAvailableError()
             }
         }
