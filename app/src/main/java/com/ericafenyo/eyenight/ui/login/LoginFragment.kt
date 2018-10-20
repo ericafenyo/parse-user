@@ -117,21 +117,27 @@ class LoginFragment : Fragment() {
         val userPassword = editTextPassword.text.toString()
 
         clearTextInputLayoutErrors()
-        // Check for empty email field.
-        if (userEmail.isEmpty()) {
-            //email field is empty display error message
-            emailInputLayout.error = getString(R.string.error_field_required)
-            cancelUserLoginAttempt = true
-            emailLayout = emailInputLayout
-        } // Check for empty password field.
-        else if (userPassword.isEmpty()) {
-            //password field is empty display error message
-            passwordInputLayout.error = getString(R.string.error_field_required)
-            cancelUserLoginAttempt = true
-            passwordLayout = passwordInputLayout
-        } else {
-            cancelUserLoginAttempt = false
+
+        when {
+            userEmail.isEmpty() -> {
+                //email field is empty display error message
+                emailInputLayout.error = getString(R.string.error_field_required)
+                cancelUserLoginAttempt = true
+                emailLayout = emailInputLayout
+            }
+            userPassword.isEmpty() -> {
+                //password field is empty display error message
+                passwordInputLayout.error = getString(R.string.error_field_required)
+                cancelUserLoginAttempt = true
+                passwordLayout = passwordInputLayout
+            }
+
+            else -> {
+                cancelUserLoginAttempt = false
+            }
+
         }
+
 
         //NOTE: I am not implementing email and password validation since a user who has already being registered
         //may receive an error. That is  if the email validation pattern changes in the future. Feel free to add
@@ -230,7 +236,7 @@ class LoginFragment : Fragment() {
     private fun handleLogInErrors(exception: ParseException?) {
         if (exception != null) {
             when (exception.code) {
-                101 -> {
+                ParseException.OBJECT_NOT_FOUND -> {
                     emailInputLayout.error = " "
                     passwordInputLayout.error = getString(R.string.error_invalid_email_or_password)
                 }

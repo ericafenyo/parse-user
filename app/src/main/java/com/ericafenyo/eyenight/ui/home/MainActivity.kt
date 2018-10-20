@@ -17,22 +17,28 @@
 package com.ericafenyo.eyenight.ui.home
 
 import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ProgressBar
+import butterknife.BindView
+import butterknife.ButterKnife
 import com.ericafenyo.eyenight.DividerItemDecorator
 import com.ericafenyo.eyenight.EyeNightViewModel
 import com.ericafenyo.eyenight.R
+import com.ericafenyo.eyenight.Result
 import com.ericafenyo.eyenight.controller.ProductController
 import com.ericafenyo.eyenight.model.Event
 import com.ericafenyo.eyenight.model.NetworkState
+import com.ericafenyo.eyenight.model.Product
 import com.ericafenyo.eyenight.model.Status
 import com.ericafenyo.eyenight.ui.event.EventActivity
 import com.ericafenyo.eyenight.ui.login.LoginActivity
@@ -42,7 +48,6 @@ import com.ericafenyo.eyenight.ui.login.show
 import com.ericafenyo.eyenight.ui.profile.ProfileActivity
 import com.parse.ParseException
 import com.parse.ParseUser
-import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
 /**
@@ -50,6 +55,10 @@ import java.io.File
  * A click on any product item launches and even screen.
  */
 class MainActivity : AppCompatActivity() {
+    @BindView(R.id.progressBar) lateinit var progressBar: ProgressBar
+    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
+    @BindView(R.id.recycler_view) lateinit var recyclerView: RecyclerView
+
     companion object {
         /**
          * Returns a newly created Intent that can be used to launch the activity.
@@ -62,17 +71,20 @@ class MainActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             return intent
         }
+
         private val LOG_TAG = MainActivity::class.java.name
     }
 
-    private var isAuthenticated = MutableLiveData<Boolean>()
     private lateinit var viewModel: EyeNightViewModel
+    private lateinit var controller: ProductController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ButterKnife.bind(this)
         setSupportActionBar(toolbar)
         viewModel = ViewModelProviders.of(this).get(EyeNightViewModel::class.java)
+        controller = ProductController()
         verifyUser()
     }
 
@@ -97,7 +109,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun manageNetworkState(networkState: NetworkState) {
-        Log.e(LOG_TAG, "$networkState")
         when (networkState.status) {
             Status.LOADING -> showProgress()
             Status.SUCCESS -> {
@@ -134,7 +145,7 @@ class MainActivity : AppCompatActivity() {
         when (exception?.code) {
             // Invalid session token, No authenticated session for user in the parse database.
             // Either the user is logged out or his or her account has being deleted.
-            209 -> {
+            ParseException.INVALID_SESSION_TOKEN -> {
                 signOut()
                 launchLoginScreen()
             }
@@ -159,32 +170,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadProducts() {
-        val controller = ProductController()
-        recycler_view.apply {
+        //Prepare recyclerView
+        recyclerView.apply {
             adapter = controller.adapter
             addItemDecoration(DividerItemDecorator(this@MainActivity))
-        }
-        with(viewModel) {
-            observe(products) {
-                controller.submitProducts(it)
-            }
-            observe(networkState) {
-                when (it.status) {
-                    Status.LOADING -> showProgress()
-                    Status.SUCCESS -> hideProgress()
-                    Status.ERROR -> {
-                        hideProgress()
-                        handleErrors(it.exception)
-                    }
-                }
-            }
         }
 
         controller.onProductItemCLick = { price, event ->
             launchEvenScreen("${price?.toDouble()}", event)
+        }
 
+        // Retrieve the products from viewModel
+        with(viewModel) {
+            //consume the liveData
+            observe(products) {
+                when (it) {
+                    is Result.Loading -> showProgress()
+                    is Result.Success -> {
+                        hideProgress()
+                        showData(it.data)
+                    }
+                    is Result.Error -> {
+                        hideProgress()
+                        handleErrors(it.exception)
+                    }
+                }.exhaustive
+            }
         }
     }
+
+    private fun showData(products: List<Product>) {
+        controller.submitProducts(products)
+    }
+
 
     private fun launchEvenScreen(price: String, event: Event) {
         EventActivity.getStartIntent(this, price, event).also { startActivity(it) }
@@ -216,3 +234,10 @@ class MainActivity : AppCompatActivity() {
         return currentUser != null
     }
 }
+
+/** Makes a "when" statement exhaustive and force the implementation
+ * of all possible branches on the when*/
+private val <T>T.exhaustive: T
+    get() = this
+
+
