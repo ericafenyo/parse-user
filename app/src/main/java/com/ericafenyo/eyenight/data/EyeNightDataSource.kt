@@ -21,6 +21,7 @@ package com.ericafenyo.eyenight.data
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.util.Log
+import com.ericafenyo.eyenight.Result
 import com.ericafenyo.eyenight.model.*
 import com.parse.ParseFile
 import com.parse.ParseObject
@@ -33,44 +34,29 @@ import java.lang.Exception
  */
 object EyeNightDataSource : DataSource {
 
-    override fun deleteAccount(): LiveData<NetworkState> {
-        val networkState = MutableLiveData<NetworkState>()
-        //start with loading state
-        networkState.postValue(NetworkState.LOADING)
-        if (ParseUser.getCurrentUser().isAuthenticated) {
-            ParseUser.getCurrentUser().deleteInBackground { error ->
-                if (error == null) {
-                    networkState.postValue(NetworkState.SUCCESS)
-                } else {
-                    networkState.postValue(NetworkState(Status.ERROR, error))
-                    Log.e(LOG_TAG, "Products Error:  Error message: ${error.message} Error code ${error.code}")
-                }
-            }
-        }
-        return networkState
-    }
+    private val LOG_TAG = EyeNightDataSource::class.java.name
 
     //TODO:Cache Products to localStore. Hit the remote source only if cache is empty.
-    override fun getProducts(): Listing<List<Product>> {
-        val liveDataProduct = MutableLiveData<List<Product>>()
-        val networkState = MutableLiveData<NetworkState>()
+    override fun getProducts(): LiveData<Result<List<Product>>> {
+        val result = MutableLiveData<Result<List<Product>>>()
         //start with loading state
-        networkState.postValue(NetworkState.LOADING)
+        result.postValue(Result.Loading)
         val className = "Product"
+        //get instance to parse query
         val parseQuery = ParseQuery.getQuery<ParseObject>(className)
+        //include "events" using their respective pointers found in the Product Class
         parseQuery.include("event")
-        parseQuery.findInBackground { listItem, error ->
-            if (error == null) {
-                networkState.postValue(NetworkState.SUCCESS)
+        //load all products from the database
+        parseQuery.findInBackground { listItem, exception ->
+            if (exception == null) {
                 val products = productMapper(listItem)
-                liveDataProduct.postValue(products)
+                result.postValue(Result.Success(products))
             } else {
-                liveDataProduct.postValue(emptyList())
-                networkState.postValue(NetworkState(Status.ERROR, error))
-                Log.e(LOG_TAG, "Products Error:  Error message: ${error.message} Error code ${error.code}")
+                Log.e(LOG_TAG, "Products Error:  Error message: ${exception.message} Error code ${exception.code}")
+                result.postValue(Result.Error(exception))
             }
         }
-        return Listing(data = liveDataProduct, networkState = networkState)
+        return result
     }
 
     private fun productMapper(listItem: List<ParseObject>): List<Product> {
@@ -114,8 +100,6 @@ object EyeNightDataSource : DataSource {
         }
     }
 
-    private val LOG_TAG = EyeNightDataSource::class.java.name
-
     override fun signUp(user: UserEntity): LiveData<NetworkState> {
         return attemptSignUp(user)
     }
@@ -137,6 +121,23 @@ object EyeNightDataSource : DataSource {
                     //There was an error,
                     networkState.postValue(NetworkState(Status.ERROR, error))
                     Log.e(LOG_TAG, "Failed to complete sign out process. Error message: ${error.message} Error code ${error.code}")
+                }
+            }
+        }
+        return networkState
+    }
+
+    override fun deleteAccount(): LiveData<NetworkState> {
+        val networkState = MutableLiveData<NetworkState>()
+        //start with loading state
+        networkState.postValue(NetworkState.LOADING)
+        if (ParseUser.getCurrentUser().isAuthenticated) {
+            ParseUser.getCurrentUser().deleteInBackground { error ->
+                if (error == null) {
+                    networkState.postValue(NetworkState.SUCCESS)
+                } else {
+                    networkState.postValue(NetworkState(Status.ERROR, error))
+                    Log.e(LOG_TAG, "Products Error:  Error message: ${error.message} Error code ${error.code}")
                 }
             }
         }

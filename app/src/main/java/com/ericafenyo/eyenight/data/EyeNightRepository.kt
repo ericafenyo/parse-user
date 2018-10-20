@@ -19,6 +19,7 @@
 package com.ericafenyo.eyenight.data
 
 import android.arch.lifecycle.LiveData
+import com.ericafenyo.eyenight.Result
 import com.ericafenyo.eyenight.model.NetworkState
 import com.ericafenyo.eyenight.model.Product
 import com.ericafenyo.eyenight.model.UserEntity
@@ -30,7 +31,7 @@ import com.parse.ParseFile
 class EyeNightRepository(private val dataSource: DataSource) : Repository {
     override fun deleteAccount(): LiveData<NetworkState> = dataSource.deleteAccount()
 
-    override fun getProducts(): Listing<List<Product>> = dataSource.getProducts()
+    override fun getProducts(): LiveData<Result<List<Product>>> = dataSource.getProducts()
 
     override fun signUp(user: UserEntity) = dataSource.signUp(user)
 
