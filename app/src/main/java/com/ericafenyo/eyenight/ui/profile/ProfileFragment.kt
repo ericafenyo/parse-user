@@ -57,18 +57,16 @@ import com.parse.ParseUser
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.profile_fragment.*
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Contains functions to manage users account. The can log out, delete their account and
  * change profile image*/
-class ProfileFragment : Fragment() {
-    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
+class ProfileFragment : Fragment(), CoroutineScope {
 
     companion object {
         /**
@@ -89,6 +87,16 @@ class ProfileFragment : Fragment() {
     @BindView(R.id.button_log_out) lateinit var buttonLogOut: Button
     @BindView(R.id.button_delete_account) lateinit var buttonDeleteAccount: Button
     @BindView(R.id.progressBar) lateinit var progressBar: ProgressBar
+    @BindView(R.id.toolbar) lateinit var toolbar: Toolbar
+
+    private val job = Job()
+
+    /**
+     * CoroutineContext of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = job
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,13 +139,18 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             when (requestCode) {
                 REQUEST_IMAGE_GALLERY -> {
                     val imageUri = data?.data
-                    GlobalScope.launch { setupUserProfileImage(imageUri) }
+                    GlobalScope.launch(Dispatchers.IO) { setupUserProfileImage(imageUri) }
                 }
             }
         }
